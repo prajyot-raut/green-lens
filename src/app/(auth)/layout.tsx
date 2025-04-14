@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth"; // Assuming you have an auth hook
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AuthLayout({
   children,
@@ -9,22 +9,24 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth(); // Replace with your actual auth hook
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Only redirect after authentication state is determined
     if (!isLoading && isAuthenticated) {
-      router.replace("/"); // Redirect to home if already logged in
+      router.replace("/");
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show nothing while checking auth status
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+        <p>Loading KJFdk...</p>
       </div>
     );
+  }
+
+  if (isAuthenticated) {
+    return null;
   }
 
   // If not authenticated, show the auth pages (login/signup)

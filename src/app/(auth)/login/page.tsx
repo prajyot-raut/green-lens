@@ -1,19 +1,19 @@
 "use client";
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // Adjust the import path as necessary
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
       console.log("User logged in:", email);
-      router.push("/"); // Redirect to home page after login
+      router.push("/");
     } catch (error) {
       console.error("Error logging in:", error);
     }

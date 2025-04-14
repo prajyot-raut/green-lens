@@ -1,33 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "@/lib/firebase"; // Adjust the import path as necessary
-import { doc, setDoc } from "firebase/firestore";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { signup } = useAuth();
 
   const handleSignUp = async () => {
     try {
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      // Save additional user data to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        username,
-        email,
-        createdAt: new Date(),
-      });
+      const user = await signup(username, email, password);
 
       console.log("User signed up:", user);
+      router.push("/");
     } catch (error) {
       console.error("Error signing up:", error);
     }
