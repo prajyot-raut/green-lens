@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         username: username,
         email: email,
         createdAt: new Date(),
+        isAdmin: false,
       });
 
       return userCredential;
