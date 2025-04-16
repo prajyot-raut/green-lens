@@ -15,7 +15,9 @@ export default function Login() {
       console.log("User logged in:", email);
       router.push("/");
     } catch (error) {
-      console.error("Error logging in:", error);
+      const firebaseError = error as { msg: string };
+      console.error("Error logging in:", firebaseError.msg);
+      alert(firebaseError.msg);
     }
   };
 

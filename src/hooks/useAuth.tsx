@@ -11,6 +11,7 @@ import {
   User,
   UserCredential,
 } from "firebase/auth";
+import { mapAuthErrorMessage } from "@/lib/utils";
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ interface AuthContextType {
   signup: (
     username: string,
     email: string,
+    role: string,
     password: string
   ) => Promise<UserCredential>;
   logout: () => Promise<void>;
@@ -40,11 +42,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string) => {
+    try {
+      const signIn = await signInWithEmailAndPassword(auth, email, password);
+      return signIn;
+    } catch (error) {
+      console.log("Error logging in:", error);
+
+      const firebaseError = error as { code: string };
+      throw { msg: mapAuthErrorMessage(firebaseError.code) };
+    }
   };
 
-  const signup = async (username: string, email: string, password: string) => {
+  const signup = async (
+    username: string,
+    email: string,
+    role: string,
+    password: string
+  ) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -56,14 +71,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await setDoc(doc(db, "users", user.uid), {
         username: username,
         email: email,
+        role: role,
         createdAt: new Date(),
         isAdmin: false,
       });
 
       return userCredential;
     } catch (error) {
-      console.error("Error signing up:", error);
-      throw error;
+      console.log("Error signing up:", error);
+
+      const firebaseError = error as { code: string };
+      throw { msg: mapAuthErrorMessage(firebaseError.code) };
     }
   };
 
