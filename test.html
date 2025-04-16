@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Leaflet Routing Machine - Multiple Waypoints</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Leaflet CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <!-- Leaflet Routing Machine CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+    />
+
+    <style>
+      #map {
+        height: 600px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Route with Multiple Waypoints</h2>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet Routing Machine JS -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+    <script>
+      // Initialize the map and set its view to Mohali, Punjab
+      var map = L.map("map").setView([30.7046, 76.7179], 13);
+
+      // Add OpenStreetMap tile layer
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      // Define waypoints
+      var waypoints = [
+        L.latLng(30.7046, 76.7179), // Mohali
+        L.latLng(30.7333, 76.7794), // Chandigarh
+        L.latLng(30.7415, 76.7683), // Sector 17
+        L.latLng(30.752, 76.787), // Sector 22
+      ];
+
+      // Add routing control to the map
+      L.Routing.control({
+        waypoints: waypoints,
+        routeWhileDragging: true,
+      }).addTo(map);
+    </script>
+  </body>
+</html>
