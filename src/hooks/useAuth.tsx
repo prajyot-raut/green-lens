@@ -21,6 +21,7 @@ interface AuthContextType {
     username: string,
     email: string,
     role: string,
+    adhar: number,
     password: string
   ) => Promise<UserCredential>;
   logout: () => Promise<void>;
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     username: string,
     email: string,
     role: string,
+    adhar: number,
     password: string
   ) => {
     try {
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: role,
         createdAt: new Date(),
         isAdmin: false,
+        adhar: adhar,
       });
 
       return userCredential;

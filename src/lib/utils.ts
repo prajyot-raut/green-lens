@@ -8,6 +8,7 @@ function mapAuthErrorMessage(code: string): string {
     "auth/network-request-failed": "Network error. Check your connection.",
     "auth/email-already-in-use": "This email is already in use.",
     "auth/invalid-credential": "The provided credential is invalid.",
+    "auth/auth/missing-password": "Password is required.",
   };
 
   return (

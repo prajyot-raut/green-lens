@@ -3,25 +3,72 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { z } from "zod";
+
+const signUpSchema = z.object({
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters" }),
+  email: z.string().email({ message: "Invalid email format" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+  role: z.enum(["user", "collector"]),
+  adhar: z.string().regex(/^\d{12}$/, {
+    message: "Adhar number must be 12 digits",
+  }),
+});
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [adhar, setAdhar] = useState<string>("");
+  const [error, setError] = useState("");
   const router = useRouter();
   const { signup } = useAuth();
 
   const handleSignUp = async () => {
     try {
-      const user = await signup(username, email, role, password);
+      if (!username || !email || !password || !role || !adhar) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      // Validate input data
+      const formData = {
+        username,
+        email,
+        password,
+        role,
+        adhar,
+      };
+
+      signUpSchema.parse(formData);
+
+      const user = await signup(
+        username,
+        email,
+        role,
+        parseInt(adhar),
+        password
+      );
 
       console.log("User signed up:", user);
       router.push("/");
-    } catch (error) {
-      const firebaseError = error as { msg: string };
-      console.error("Error signing up:", firebaseError.msg);
-      alert(firebaseError.msg);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const errors = err.errors;
+        errors.forEach((err) => {
+          console.error("Validation error:", err.message);
+          alert(err.message);
+        });
+      } else {
+        const firebaseError = err as { msg: string };
+        console.error("Error signing up:", firebaseError.msg);
+        alert(firebaseError.msg);
+      }
     }
   };
 
@@ -80,6 +127,25 @@ export default function SignUp() {
             <option value="user">User</option>
             <option value="collector">Trast Collector</option>
           </select>
+        </div>
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="adhar"
+          >
+            Adhar Number
+          </label>
+          <input
+            type="text"
+            id="adhar"
+            value={adhar}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "");
+              setAdhar(digits);
+            }}
+            placeholder="Enter your adhar number"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
         <div className="mb-6">
           <label
