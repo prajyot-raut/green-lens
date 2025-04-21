@@ -10,7 +10,6 @@ import useLocation from "@/hooks/useLocation";
 
 const UploadImage = () => {
   const { user } = useAuth();
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const [imgWidth, setImgWidth] = useState<number>(0);
   const [imgHeight, setImgHeight] = useState<number>(0);
@@ -63,7 +62,6 @@ const UploadImage = () => {
         longitude: longitude,
       });
 
-      setImageUrl(data.secure_url);
       alert("Image uploaded successfully!");
     } catch (error: Error | unknown) {
       console.error("Error uploading image: ", error);
@@ -94,14 +92,25 @@ const UploadImage = () => {
             />
 
             <div className="absolute bottom-1 left-1/2 flex gap-2 -translate-x-1/2">
+              <input
+                type="text"
+                placeholder="Add info"
+                className="shadow appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+              />
               <button
                 onClick={() => {
                   setImageBlob(null);
                 }}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Retake
               </button>
-              <button onClick={uploadImage}>Upload</button>
+              <button
+                onClick={uploadImage}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Upload
+              </button>
             </div>
           </div>
         )}
