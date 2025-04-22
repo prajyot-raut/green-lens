@@ -10,10 +10,20 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { useAuth } from "@/hooks/useAuth"; // Adjust path as needed
+import Image from "next/image";
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuth(); // Get user from context
-  const [images, setImages] = useState<UserImage[]>([]);
+  interface ImageData {
+    id: string;
+    imageUrl: string;
+    altText?: string;
+    uploadedAt: Timestamp | string;
+    userId: string;
+    [key: string]: string | Timestamp | undefined;
+  }
+
+  const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,11 +40,18 @@ const ProfilePage: React.FC = () => {
         const imagesRef = collection(db, "images");
         const q = query(imagesRef, where("userId", "==", user.uid));
         const querySnapshot = await getDocs(q);
-        const fetchedImages = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setImages(fetchedImages);
+        const fetchedImages = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            imageUrl: data.imageUrl as string,
+            altText: data.altText as string | undefined,
+            uploadedAt: data.uploadedAt as Timestamp,
+            userId: data.userId as string,
+            ...data,
+          };
+        });
+        setImages(fetchedImages as ImageData[]);
       } catch (err) {
         console.error("Error fetching user images:", err);
         setError("Failed to load uploaded images.");
@@ -65,22 +82,14 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="mb-12 flex flex-col items-center md:flex-row md:items-start bg-white p-6 rounded-lg shadow-md">
-        {user.photoURL && (
-          <img
-            src={user.photoURL}
-            alt={`${user.displayName || "User"}'s profile`}
-            className="w-32 h-32 rounded-full mr-0 md:mr-8 mb-4 md:mb-0 object-cover border-4 border-gray-200"
-          />
-        )}
-        {!user.photoURL && (
-          <div className="w-32 h-32 rounded-full mr-0 md:mr-8 mb-4 md:mb-0 bg-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold border-4 border-gray-200">
-            {user.displayName ? user.displayName.charAt(0).toUpperCase() : "?"}
-          </div>
-        )}
+      <div className="flex flex-col md:flex-row items-center mb-8">
+        <div className="w-32 h-32 rounded-full mr-0 md:mr-8 mb-4 md:mb-0 bg-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold border-4 border-gray-200">
+          {user?.username ? user.username.charAt(0).toUpperCase() : "?"}
+        </div>
+
         <div className="text-center md:text-left">
           <h1 className="text-3xl font-bold mb-2">
-            {user.displayName || "User Name"}
+            {user.username || "User Name"}
           </h1>
           <p className="text-gray-600 mb-4">
             {user.email || "No email provided"}
@@ -101,19 +110,23 @@ const ProfilePage: React.FC = () => {
             {images.map((image) => (
               <div
                 key={image.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden group"
+                className="border rounded-lg overflow-hidden shadow-sm"
               >
-                <img
+                <Image
                   src={image.imageUrl}
                   alt={
                     image.altText ||
                     `Uploaded image by ${user.displayName || "user"}`
                   }
+                  width={300}
+                  height={192}
                   className="w-full h-48 object-cover group-hover:opacity-80 transition duration-200"
-                  onError={(e) =>
-                    (e.currentTarget.src =
-                      "https://via.placeholder.com/300x200?text=Image+Error")
-                  }
+                  onError={(e) => {
+                    // Handle error with placeholder
+                    const imgElement = e.currentTarget as HTMLImageElement;
+                    imgElement.src =
+                      "https://via.placeholder.com/300x200?text=Image+Error";
+                  }}
                 />
                 <div className="p-4">
                   <p className="text-sm text-gray-500">
@@ -127,7 +140,7 @@ const ProfilePage: React.FC = () => {
           !loading &&
           !error && (
             <p className="text-gray-500">
-              You haven't uploaded any images yet.
+              You haven&apos;t uploaded any images yet.
             </p>
           )
         )}
