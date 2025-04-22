@@ -14,16 +14,19 @@ const UploadImage = () => {
   const [imgWidth, setImgWidth] = useState<number>(0);
   const [imgHeight, setImgHeight] = useState<number>(0);
   const { latitude, longitude, error: locationError } = useLocation();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleImageCapture = (blob: Blob, width: number, height: number) => {
     setImageBlob(blob);
     setImgWidth(width);
     setImgHeight(height);
+    setIsUploading(false);
+    setUploadProgress(0);
   };
 
   const uploadImage = async () => {
-    if (!imageBlob) {
-      alert("No image to upload.");
+    if (!imageBlob || isUploading) {
       return;
     }
 
@@ -37,59 +40,97 @@ const UploadImage = () => {
       return;
     }
 
+    if (!user) {
+      alert("You must be logged in to upload images.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
     const formData = new FormData();
     formData.append("file", imageBlob, "capture.png");
 
-    try {
-      const response = await fetch("/api/image/upload", {
-        method: "POST",
-        body: formData,
-      });
+    const xhr = new XMLHttpRequest();
 
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error.message);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percentComplete);
       }
+    };
 
-      if (!user) {
-        alert("You must be logged in to upload images.");
-        return;
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+
+          if (data.error) {
+            throw new Error(
+              data.error.message || "Upload API returned an error."
+            );
+          }
+
+          const coordinates = new GeoPoint(latitude, longitude);
+          const timestamp = Timestamp.now();
+
+          await addDoc(collection(db, "images"), {
+            userId: user.uid,
+            cloudinaryPublicId: data.public_id,
+            imageUrl: data.secure_url,
+            timestamp: timestamp,
+            coordinates: coordinates,
+            isDone: false,
+          });
+
+          alert("Image uploaded successfully!");
+          setImageBlob(null);
+        } catch (error: any) {
+          console.error(
+            "Error processing upload response or saving to Firestore:",
+            error
+          );
+          alert(`Error after upload: ${error.message || "Unknown error"}`);
+        } finally {
+          setIsUploading(false);
+          setUploadProgress(0);
+        }
+      } else {
+        console.error("Upload failed:", xhr.statusText, xhr.responseText);
+        alert(
+          `Upload failed: ${xhr.statusText || `Status code ${xhr.status}`}`
+        );
+        setIsUploading(false);
+        setUploadProgress(0);
       }
+    };
 
-      const coordinates = new GeoPoint(latitude, longitude);
-      const timestamp = Timestamp.now();
+    xhr.onerror = () => {
+      console.error("Upload failed: Network error.");
+      alert("Upload failed due to a network error.");
+      setIsUploading(false);
+      setUploadProgress(0);
+    };
 
-      await addDoc(collection(db, "images"), {
-        userId: user.uid,
-        cloudinaryPublicId: data.public_id,
-        imageUrl: data.secure_url,
-        timestamp: timestamp,
-        coordinates: coordinates,
-        isDone: false,
-      });
-
-      alert("Image uploaded successfully!");
-      setImageBlob(null);
-    } catch (error: Error | unknown) {
-      console.error("Error uploading image: ", error);
-      alert(
-        `Error uploading image: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
+    xhr.open("POST", "/api/image/upload", true);
+    xhr.send(formData);
   };
 
   return (
     <div className="absolute h-screen w-full flex flex-col items-center justify-center bg-gray-100">
-      <div className="absolute ">
-        <CameraView onCapture={handleImageCapture} />
-      </div>
+      {!imageBlob && (
+        <div className="absolute">
+          <CameraView onCapture={handleImageCapture} />
+        </div>
+      )}
 
-      <div className="absolute h-screen top-0">
+      <div
+        className={`absolute h-screen top-0 w-full ${
+          imageBlob ? "block" : "hidden"
+        }`}
+      >
         {imageBlob && (
-          <div>
+          <div className="relative h-full w-full">
             <Image
               key={imageBlob.size}
               src={URL.createObjectURL(imageBlob)}
@@ -97,29 +138,43 @@ const UploadImage = () => {
               className="object-cover h-screen w-full"
               width={imgWidth}
               height={imgHeight}
+              priority
             />
 
-            <div className="absolute bottom-1 left-1/2 flex gap-2 -translate-x-1/2">
-              <input
-                type="text"
-                placeholder="Add info"
-                className="shadow appearance-none border rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-              />
-              <button
-                onClick={() => {
-                  setImageBlob(null);
-                }}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Retake
-              </button>
-              <button
-                onClick={uploadImage}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Upload
-              </button>
-            </div>
+            {isUploading && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10">
+                <div className="w-3/4 max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-150"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-white text-lg font-semibold mt-2">
+                  Uploading... {uploadProgress}%
+                </p>
+              </div>
+            )}
+
+            {!isUploading && (
+              <div className="absolute bottom-4 left-1/2 flex gap-4 -translate-x-1/2 z-20">
+                <button
+                  onClick={() => {
+                    setImageBlob(null);
+                  }}
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline text-lg shadow-lg"
+                  disabled={isUploading}
+                >
+                  Retake
+                </button>
+                <button
+                  onClick={uploadImage}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline text-lg shadow-lg disabled:opacity-50"
+                  disabled={isUploading}
+                >
+                  Upload
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
