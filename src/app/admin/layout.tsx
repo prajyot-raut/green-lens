@@ -15,9 +15,10 @@ export default function ProtectedLayout({
   useEffect(() => {
     if (!isLoading) {
       // Redirect if not authenticated OR if authenticated but not an admin
-      if (!isAuthenticated || (isAuthenticated && user?.isAdmin !== "admin")) {
+      if (!isAuthenticated || (isAuthenticated && !user?.isAdmin)) {
         // Redirect to login or a 'not authorized' page
-        router.push("/"); // Or perhaps router.push('/unauthorized');
+        console.log(user);
+        //router.push("/"); // Or perhaps router.push('/unauthorized');
       }
     }
   }, [isAuthenticated, isLoading, user, router]);
@@ -28,7 +29,7 @@ export default function ProtectedLayout({
   }
 
   // If authenticated AND is an admin, render the children
-  if (isAuthenticated && user?.isAdmin === "admin") {
+  if (isAuthenticated && user?.isAdmin) {
     return <>{children}</>;
   }
 

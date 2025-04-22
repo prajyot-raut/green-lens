@@ -2,7 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from "react";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -12,6 +12,19 @@ import {
   UserCredential,
 } from "firebase/auth";
 import { mapAuthErrorMessage } from "@/lib/utils";
+
+// Define a type for your custom user data from Firestore
+interface AppUserData {
+  username: string;
+  email: string;
+  role: string;
+  createdAt: Date; // Or Timestamp if you store it as Firestore Timestamp
+  isAdmin: boolean;
+  adhar: number;
+}
+
+// Combine Firebase Auth User with your Firestore data
+type AppUser = User & AppUserData;
 
 interface AuthContextType {
   user: User | null;
