@@ -17,8 +17,7 @@ export default function ProtectedLayout({
       // Redirect if not authenticated OR if authenticated but not an admin
       if (!isAuthenticated || (isAuthenticated && !user?.isAdmin)) {
         // Redirect to login or a 'not authorized' page
-        console.log(user);
-        //router.push("/"); // Or perhaps router.push('/unauthorized');
+        router.push("/"); // Or perhaps router.push('/unauthorized');
       }
     }
   }, [isAuthenticated, isLoading, user, router]);

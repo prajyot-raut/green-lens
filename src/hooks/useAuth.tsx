@@ -27,7 +27,7 @@ interface AppUserData {
 type AppUser = User & AppUserData;
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<UserCredential>;
   signup: (
@@ -44,15 +44,40 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in, fetch Firestore data
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        try {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            // Combine auth user data with Firestore data
+            const appUserData = docSnap.data() as AppUserData;
+            setUser({
+              ...firebaseUser, // Spread properties from Firebase User
+              ...appUserData, // Spread properties from Firestore document
+            });
+          } else {
+            // Handle case where user exists in Auth but not Firestore (optional)
+            console.error("User document not found in Firestore!");
+            setUser(null); // Or handle as appropriate
+          }
+        } catch (error) {
+          console.error("Error fetching user data from Firestore:", error);
+          setUser(null); // Handle error case
+        }
+      } else {
+        // User is signed out
+        setUser(null);
+      }
       setIsLoading(false);
     });
 
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
