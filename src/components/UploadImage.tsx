@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, GeoPoint, Timestamp } from "firebase/firestore";
 import Image from "next/image";
 import CameraView from "./CameraView";
 import useLocation from "@/hooks/useLocation";
@@ -32,6 +32,11 @@ const UploadImage = () => {
       return;
     }
 
+    if (!latitude || !longitude) {
+      alert("Could not get valid location coordinates.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", imageBlob, "capture.png");
 
@@ -52,17 +57,20 @@ const UploadImage = () => {
         return;
       }
 
+      const coordinates = new GeoPoint(latitude, longitude);
+      const timestamp = Timestamp.now();
+
       await addDoc(collection(db, "images"), {
         userId: user.uid,
         cloudinaryPublicId: data.public_id,
         imageUrl: data.secure_url,
-        uploadDate: new Date(),
+        timestamp: timestamp,
+        coordinates: coordinates,
         isDone: false,
-        latitude: latitude,
-        longitude: longitude,
       });
 
       alert("Image uploaded successfully!");
+      setImageBlob(null);
     } catch (error: Error | unknown) {
       console.error("Error uploading image: ", error);
       alert(
