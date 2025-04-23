@@ -89,12 +89,43 @@ export default function DriverPage() {
       alert("Please select a route first.");
       return;
     }
-    console.log(
-      "Starting route:",
-      selectedRouteDetails.name,
-      selectedRouteDetails.id
+
+    const { coordinates, name } = selectedRouteDetails;
+
+    if (!coordinates || coordinates.length < 2) {
+      alert("Route does not have enough points to generate directions.");
+      return;
+    }
+
+    // Base URL for Google Maps Directions
+    const baseUrl = "https://www.google.com/maps/dir/";
+
+    // Format coordinates as "latitude,longitude" strings
+    const formattedCoords = coordinates.map(
+      (gp: GeoPoint) => `${gp.latitude},${gp.longitude}`
     );
-    alert(`Starting route: ${selectedRouteDetails.name}`);
+
+    // Origin is the first point
+    const origin = formattedCoords[0];
+    // Destination is the last point
+    const destination = formattedCoords[formattedCoords.length - 1];
+
+    // Waypoints are points between origin and destination
+    const waypoints = formattedCoords.slice(1, -1).join("|");
+
+    // Construct the final URL
+    let googleMapsUrl = `${baseUrl}${origin}/`;
+    if (waypoints) {
+      googleMapsUrl += `${waypoints}/`;
+    }
+    googleMapsUrl += destination;
+
+    console.log("Starting route:", name, selectedRouteDetails.id);
+    console.log("Redirecting to Google Maps:", googleMapsUrl);
+
+    // Redirect the user to Google Maps in a new tab (optional) or same tab
+    // window.open(googleMapsUrl, '_blank'); // Opens in new tab
+    window.location.href = googleMapsUrl; // Opens in the same tab
   };
 
   return (
