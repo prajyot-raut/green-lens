@@ -25,7 +25,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [adhar, setAdhar] = useState<string>("");
-  const [error, setError] = useState("");
+  //const [error, setError] = useState("");
   const router = useRouter();
   const { signup } = useAuth();
 

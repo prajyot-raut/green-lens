@@ -10,7 +10,7 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import L, { LatLngExpression, Icon } from "leaflet";
+import L, { LatLngExpression } from "leaflet";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -22,8 +22,13 @@ import {
   orderBy,
 } from "firebase/firestore";
 
+// Define an interface for the Icon Default prototype that includes _getIconUrl
+interface ExtendedIconDefaultPrototype extends L.Icon.Default {
+  _getIconUrl?: string;
+}
+
 // Fix default icon issue with React-Leaflet and Webpack
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as ExtendedIconDefaultPrototype)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -74,7 +79,10 @@ export default function AdminMap() {
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const mapCenter: LatLngExpression = [20.5937, 78.9629]; // Default center (India)
+  const mapCenter = useMemo<LatLngExpression>(
+    () => [20.5937, 78.9629], // Default center (India)
+    []
+  );
   const mapZoom = 5;
 
   // --- Data Fetching ---
@@ -290,14 +298,14 @@ export default function AdminMap() {
     return mapZoom;
   }, [selectedRoute, selectedImages, mapZoom]);
 
-  const createThumbnailIcon = (imageUrl: string) => {
+  /* const createThumbnailIcon = (imageUrl: string) => {
     return new L.Icon({
       iconUrl: imageUrl,
       iconSize: [40, 40],
       iconAnchor: [20, 40],
       popupAnchor: [0, -40],
     });
-  };
+  }; */
 
   return (
     <div className="flex h-[calc(100vh-80px)]">

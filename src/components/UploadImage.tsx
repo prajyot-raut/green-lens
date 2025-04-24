@@ -95,12 +95,14 @@ const UploadImage = () => {
           setDescription(""); // Reset description after successful upload
 
           router.push("/profile");
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(
             "Error processing upload response or saving to Firestore:",
             error
           );
-          alert(`Error after upload: ${error.message || "Unknown error"}`);
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          alert(`Error after upload: ${errorMessage}`);
         } finally {
           setIsUploading(false);
           setUploadProgress(0);
