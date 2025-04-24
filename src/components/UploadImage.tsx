@@ -7,6 +7,8 @@ import { collection, addDoc, GeoPoint, Timestamp } from "firebase/firestore";
 import Image from "next/image";
 import CameraView from "./CameraView";
 import useLocation from "@/hooks/useLocation";
+import { FaRedo, FaUpload } from "react-icons/fa"; // Import icons
+import { useRouter } from "next/navigation";
 
 const UploadImage = () => {
   const { user } = useAuth();
@@ -16,6 +18,8 @@ const UploadImage = () => {
   const { latitude, longitude, error: locationError } = useLocation();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [description, setDescription] = useState(""); // State for the description
+  const router = useRouter();
 
   const handleImageCapture = (blob: Blob, width: number, height: number) => {
     setImageBlob(blob);
@@ -23,6 +27,7 @@ const UploadImage = () => {
     setImgHeight(height);
     setIsUploading(false);
     setUploadProgress(0);
+    setDescription(""); // Reset description on new capture
   };
 
   const uploadImage = async () => {
@@ -80,11 +85,16 @@ const UploadImage = () => {
             imageUrl: data.secure_url,
             timestamp: timestamp,
             coordinates: coordinates,
+            description: description, // Add description here
             isDone: false,
           });
 
-          alert("Image uploaded successfully!");
           setImageBlob(null);
+          setIsUploading(false);
+          setUploadProgress(0);
+          setDescription(""); // Reset description after successful upload
+
+          router.push("/profile");
         } catch (error: any) {
           console.error(
             "Error processing upload response or saving to Firestore:",
@@ -117,67 +127,87 @@ const UploadImage = () => {
   };
 
   return (
-    <div className="absolute h-screen w-full flex flex-col items-center justify-center bg-gray-100">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-gray-100 overflow-hidden">
       {!imageBlob && (
-        <div className="absolute">
+        <div className="absolute inset-0">
           <CameraView onCapture={handleImageCapture} />
         </div>
       )}
 
-      <div
-        className={`absolute h-screen top-0 w-full ${
-          imageBlob ? "block" : "hidden"
-        }`}
-      >
-        {imageBlob && (
-          <div className="relative h-full w-full">
+      {imageBlob && (
+        <div className="absolute inset-0 h-full w-full flex flex-col">
+          {" "}
+          {/* Use flex-col */}
+          {/* Image Preview Container */}
+          <div className="relative flex-grow">
+            {" "}
+            {/* Allow image to take up space */}
             <Image
               key={imageBlob.size}
               src={URL.createObjectURL(imageBlob)}
-              alt="Captured"
-              className="object-cover h-screen w-full"
+              alt="Captured Preview"
+              className="object-cover h-full w-full"
               width={imgWidth}
               height={imgHeight}
               priority
             />
-
-            {isUploading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-10">
-                <div className="w-3/4 max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-150"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-                <p className="text-white text-lg font-semibold mt-2">
-                  Uploading... {uploadProgress}%
-                </p>
+          </div>
+          {/* Uploading Overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center z-30 p-4">
+              {" "}
+              {/* Increase z-index */}
+              <div className="w-full max-w-md bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                <div
+                  className="bg-blue-600 h-4 rounded-full transition-all duration-150"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
               </div>
-            )}
-
-            {!isUploading && (
-              <div className="absolute bottom-4 left-1/2 flex gap-4 -translate-x-1/2 z-20">
+              <p className="text-white text-xl font-semibold mt-3">
+                Uploading... {uploadProgress}%
+              </p>
+            </div>
+          )}
+          {/* Controls and Description Area (only when not uploading) */}
+          {!isUploading && (
+            <div className="bg-white p-4 z-20 absolute bottom-0 left-0 right-0 flex flex-col items-center justify-center gap-4 shadow-lg rounded-t-lg">
+              {" "}
+              {/* Container for controls */}
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add a description (optional)..."
+                className="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                disabled={isUploading}
+              />
+              <div className="flex justify-center gap-8">
                 <button
                   onClick={() => {
                     setImageBlob(null);
+                    setIsUploading(false);
+                    setUploadProgress(0);
+                    setDescription(""); // Reset description on retake
                   }}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline text-lg shadow-lg"
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold p-4 rounded-full focus:outline-none focus:shadow-outline shadow-lg flex items-center justify-center"
+                  aria-label="Retake Picture"
                   disabled={isUploading}
                 >
-                  Retake
+                  <FaRedo size={24} />
                 </button>
                 <button
                   onClick={uploadImage}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline text-lg shadow-lg disabled:opacity-50"
-                  disabled={isUploading}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-4 rounded-full focus:outline-none focus:shadow-outline shadow-lg flex items-center justify-center disabled:opacity-50"
+                  aria-label="Upload Picture"
+                  disabled={isUploading || !latitude || !longitude}
                 >
-                  Upload
+                  <FaUpload size={24} />
                 </button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

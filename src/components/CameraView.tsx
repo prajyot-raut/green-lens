@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { FaCamera } from "react-icons/fa"; // Import camera icon
 
 interface CameraViewProps {
   onCapture: (blob: Blob, width: number, height: number) => void;
@@ -63,20 +64,24 @@ const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
   };
 
   return (
-    <div>
+    <div className="relative w-full h-full">
       <video
         ref={videoRef}
         autoPlay
+        playsInline // Add playsInline for better mobile compatibility
         muted
-        className="w-full h-screen object-cover"
+        className="w-full h-full object-cover" // Ensure video covers the container
       />
       <canvas ref={canvasRef} className="hidden" />
-      <button
-        className="absolute bottom-0.5 left-1/2 -translate-x-1/2"
-        onClick={takePicture}
-      >
-        Take Picture
-      </button>
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center z-10">
+        <button
+          className="bg-white rounded-full p-4 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex items-center justify-center"
+          onClick={takePicture}
+          aria-label="Take Picture"
+        >
+          <FaCamera size={30} className="text-gray-700" />
+        </button>
+      </div>
     </div>
   );
 };
