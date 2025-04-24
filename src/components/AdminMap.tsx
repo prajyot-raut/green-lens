@@ -308,8 +308,8 @@ export default function AdminMap() {
   }; */
 
   return (
-    <div className="flex h-[calc(100vh-80px)]">
-      <div className="w-1/3 lg:w-1/4 p-4 overflow-y-auto bg-gray-100 border-r border-gray-300 flex flex-col space-y-4">
+    <div className="flex h-screen pt-16">
+      <div className="w-1/3 lg:w-1/4 p-4 overflow-y-auto bg-gray-100 border-r border-gray-300 flex flex-col space-y-4 h-full">
         <h2 className="text-xl font-semibold mb-2 text-center">
           Route Planner
         </h2>

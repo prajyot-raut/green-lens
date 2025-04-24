@@ -73,37 +73,10 @@ const testimonialVariants = {
   },
 };
 
-// Simple Navbar Component (can be extracted later)
-const Navbar = () => (
-  <nav className="fixed top-0 left-0 w-full bg-white bg-opacity-80 backdrop-blur-md shadow-sm z-50">
-    <div className="container mx-auto px-6 py-3 flex justify-between items-center">
-      <Link href="/" className="text-2xl font-bold text-green-600">
-        Green Lens
-      </Link>
-      <div className="space-x-4">
-        <Link
-          href="/login"
-          className="text-gray-600 hover:text-blue-500 transition duration-200"
-        >
-          Login
-        </Link>
-        <Link
-          href="/signup"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-        >
-          Sign Up
-        </Link>
-      </div>
-    </div>
-  </nav>
-);
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 text-gray-800 overflow-x-hidden pt-16">
       {" "}
-      {/* Added padding-top for fixed navbar */}
-      <Navbar />
       {/* Hero Section */}
       <motion.section
         className="container mx-auto px-6 py-20 md:py-28 text-center flex flex-col items-center relative isolate" // Added isolate for stacking context

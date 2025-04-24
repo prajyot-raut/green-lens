@@ -129,7 +129,7 @@ export default function DriverPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8 min-h-screen bg-gray-50">
+    <div className="container mx-auto p-4 md:p-8 min-h-screen bg-gray-50 mt-16">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">
         Select Your Route
       </h1>

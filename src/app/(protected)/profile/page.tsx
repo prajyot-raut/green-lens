@@ -81,7 +81,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
+    <div className="container mx-auto p-4 md:p-8 mt-16">
       <div className="flex flex-col md:flex-row items-center mb-8">
         <div className="w-32 h-32 rounded-full mr-0 md:mr-8 mb-4 md:mb-0 bg-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold border-4 border-gray-200">
           {user?.username ? user.username.charAt(0).toUpperCase() : "?"}
