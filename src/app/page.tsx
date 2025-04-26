@@ -128,6 +128,57 @@ export default function Home() {
           </motion.div>
         </motion.div>
       </motion.section>
+      {/* Video Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="p-6 md:p-8 text-center mb-6">
+              <h2 className="text-3xl font-bold mb-4 text-gray-800">
+                See Green Lens in Action
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Watch how our platform helps document environmental changes over
+                time.
+              </p>
+            </div>
+
+            <div className="relative aspect-video w-full shadow-inner bg-black rounded-b-lg overflow-hidden">
+              <video
+                className="w-full h-full object-cover"
+                controls
+                poster="/video-thumbnail.jpg"
+              >
+                <source src="/video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+
+              {/* Optional play button overlay for custom styling */}
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 0.5 }}
+              >
+                <div className="bg-green-500/20 backdrop-blur-sm p-8 rounded-full">
+                  <svg
+                    className="w-16 h-16 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
       {/* Features Section */}
       <section className="py-20 bg-white shadow-inner">
         <div className="container mx-auto px-6">

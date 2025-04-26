@@ -174,9 +174,6 @@ export default function SignUp() {
           </button>
         </div>
       </form>
-      <p className="text-center text-gray-500 text-xs">
-        &copy;2023 Your Company. All rights reserved.
-      </p>
     </div>
   );
 }
