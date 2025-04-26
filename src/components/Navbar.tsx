@@ -10,8 +10,7 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaSignInAlt,
-  FaCameraRetro, // Example icon for Upload
-  FaHome, // Example icon for Home
+  FaCameraRetro,
 } from "react-icons/fa";
 
 const Navbar = () => {
@@ -54,12 +53,24 @@ const Navbar = () => {
 
           {/* Desktop Menu Links */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/"
-              className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
-            >
-              <FaHome /> Home
-            </Link>
+            {user?.isAdmin && (
+              <Link
+                href="/admin"
+                className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+              >
+                <FaUserCircle /> Admin
+              </Link>
+            )}
+
+            {user?.role == "collector" && (
+              <Link
+                href="/route"
+                className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+              >
+                <FaUserCircle /> Driver
+              </Link>
+            )}
+
             {user && (
               <>
                 <Link
@@ -85,12 +96,21 @@ const Navbar = () => {
               </>
             )}
             {!user && (
-              <Link
-                href="/login"
-                className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
-              >
-                <FaSignInAlt /> Login
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                >
+                  <FaSignInAlt /> Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-gray-700 hover:bg-gray-100 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                >
+                  <FaSignInAlt />
+                  Register
+                </Link>
+              </>
             )}
           </div>
 
