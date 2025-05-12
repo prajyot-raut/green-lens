@@ -1,50 +1,31 @@
 # Green Lens
 
-### Firebase Policy
+Green Lens is a web application designed to help manage and organize trash collection. Users can upload images of trash locations, and administrators can use these images to create optimized collection routes.
 
-```json
-rules_version = '2';
+## Features
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+### User Features
 
-  // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
+- **Authentication:** Secure sign-up and login for users.
+- **Image Upload:** Users can capture and upload images of trash, automatically tagging them with their current GPS location.
+- **Profile Management:** Users can view their uploaded images.
 
-    // Helper function to check if the requesting user is the owner of the document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
+### Collector/Driver Features
 
-    // Helper function to check if the requesting user is an admin
-    // Assumes you have an 'isAdmin' boolean field in the user's document
-    function isAdmin() {
-      // Read the requesting user's document from the 'users' collection
-      // Ensure the 'users' collection rules allow this read access for authenticated users
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
-    }
+- **Route Viewing:** Drivers can view assigned routes and see the path on a map.
+- **Navigation:** Start navigation for a selected route using Google Maps.
 
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
+### Admin Features
 
-    match /images/{imageId} {
-      allow read: if isAuthenticated();
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update, delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
-    }
+- **Dashboard:** Admins have access to a map-based interface to view all uploaded trash images.
+- **Route Creation:** Admins can select multiple images from the map and create a named collection route.
+- **Route Management:** View, load, and manage saved routes.
+- **Image Moderation:** (Implicit) Admins can see all images and decide which ones to include in routes.
 
-    // Rules for the 'routes' collection
-    match /routes/{routeId} {
-      // Only admins can read, create, update, or delete routes
-      allow read, write: if isAdmin(); // 'write' covers create, update, delete
+## License
 
-      // Optional: Add validation for route creation/update if needed
-      // allow create: if isAdmin() && request.resource.data.name is string && ... ;
-      // allow update: if isAdmin() && ... ;
-    }
-  }
-}
-```
+[MIT](https://choosealicense.com/licenses/mit/)
+
+## Author
+
+- Prajyot Raut
